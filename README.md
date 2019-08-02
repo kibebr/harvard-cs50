@@ -28,7 +28,7 @@ to compile and run the problem sets that were based in C, you will need to have 
 
 not all of my solutions will use the CS50's library, but if one does, remember to add the argument ```-lcs50``` while compilling.
 
-```clang name_of_the_file.c -0 -lcs50```
+```clang name_of_the_file.c -o -lcs50```
 
 after compilling, a new file will be created in your source folder, which is an executable. to execute it:
 
