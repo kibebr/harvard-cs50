@@ -24,7 +24,7 @@ _What you will learn:_
 
 # observations
 
-to run compile and run the problem sets that were based in C, you will need to have [GCC](https://gcc.gnu.org/) installed on your device, as well as the CS50's original library (cs50.h and cs50.c); [more on that here.](https://github.com/cs50/libcs50)
+to compile and run the problem sets that were based in C, you will need to have [GCC](https://gcc.gnu.org/) installed on your device, as well as the CS50's original library (cs50.h and cs50.c); [more on that here.](https://github.com/cs50/libcs50)
 
 not all of my solutions will use the CS50's library, but if one does, remember to add the argument ```-lcs50``` while compilling.
 
