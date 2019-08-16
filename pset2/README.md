@@ -1,7 +1,7 @@
 # crack-c
 this piece of code utilizes the ```crypt()``` function in ```C``` to find hashed passwords. 
 
-![demonstration](https://imgur.com/Ssw2dzn)
+![demonstration](https://imgur.com/a/h99urVk)
 
 # observations
 
