@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Log In
+{% endblock %}
+
+{% block main %}
+
+    <div id="loginDiv">
+        <form class="needs-validation" id="form" action="/login" method="post" novalidate>
+            <div class="form-group">
+                <input autocomplete="off" autofocus class="form-control" id="usernameForm" name="username" placeholder="Username" type="text" required>
+            </div>
+            <div class="form-group">
+                <input class="form-control" id="passwordForm" name="password" placeholder="Password" type="password" required>
+            </div>
+            <button class="btn btn-primary" type="submit">Log In</button>
+        </form>
+
+        <div id="all-errors" class="error_placeholders alert alert-danger" role="alert">{{ error_message }}</div>
+
+    </div>
+
+    <div id="registerDiv" style="display: none;">
+        <form class="needs-validation" action="/register" method="post" novalidate>
+            <div class="form-group">
+                <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text" required>
+            </div>
+            <div class="form-group">
+                <input class="form-control" id="passwordInput" name="password" placeholder="Password" type="password" required>
+                <input class="form-control" id="passwordCheckInput" name="passwordCheck" placeholder="Confirm password" type="password" required>
+            </div>
+            <button class="btn btn-primary" type="submit">Register</button>
+        </form>
+
+        <div id="password_confirmation_error" class="error_placeholders alert alert-danger" role="alert">Your passwords need to be the same.</div>
+    </div>
+
+    <script>
+
+        var passwordInput = document.getElementById("passwordInput");
+        var passwordCheckInput = document.getElementById("passwordCheckInput");
+
+        var registering = false;
+
+        // CHANGES FORMS FROM LOG-IN TO REGISTER
+        var registerButton = document.getElementById("registerNavItem");
+        registerButton.addEventListener("click", function(){
+            document.getElementById("loginDiv").style.display = "none";
+            document.getElementById("registerDiv").style.display = "inline";
+            registering = true;
+        });
+
+        // BOOTSTRAP'S CODE TO VALIDATE FORMS
+        (function()
+        {
+            'use strict';
+            window.addEventListener('load', function()
+            {
+                // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                var forms = document.getElementsByClassName('needs-validation');
+                // Loop over them and prevent submission
+                var validation = Array.prototype.filter.call(forms, function(form)
+                {
+                    form.addEventListener('submit', function(event)
+                    {
+                        if (form.checkValidity() === false)
+                        {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+
+                        if(passwordInput.value!=passwordCheckInput.value)
+                        {
+                            event.preventDefault();
+                            event.stopPropagation();
+
+                            // additional measures if both passwords inputs aren't the same
+                            document.getElementById("password_confirmation_error").style.display = "inline-block";
+                        }
+
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+
+        // IF THERE IS AN SERVER-SIDE ERROR WHEN LOGGING IN/REGISTERING, DISPLAY IT
+        {% if error_message %}
+            document.getElementById("all-errors").style.display = "inline-block";
+        {%endif%}
+    </script>
+{% endblock %}
