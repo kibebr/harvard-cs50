@@ -2,6 +2,94 @@
 
 {% block main %}
 
-<p>test</p>
+<div id="portfolio">Portfolio</div>
 
+<div id="quote" class="hubDivs" style="display:none;">
+    <form class="form-group" action="/quote" method="post">
+        <input autocomplete="off" autofocus class="form-control" name="symbol" placeholder="Symbol" type="text">
+        <button class="btn btn-primary" type="submit">Quote</button>
+    </form>
+
+    {% if quoteData is defined %}
+        {% if quoteData is not none %}
+            <div class="card bg-white mb-3" style="max-width: 18rem;">
+                <div class="card-header" style="color:#2e944b;">Quote found!</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ quoteData.get("name") }}</h5>
+                    <p class="card-text">Price: {{ quoteData.get("price") }}</p>
+                    <p class="card-text">Symbol: {{ quoteData.get("symbol") }}</p>
+                    <form class="needs-validation" action="/buy" method="post" novalidate>
+                        <div class="form-row">
+                            <div id="sharesDiv" class="col">
+                                <label class="sr-only" for="sharesInput"></label>
+                                <div class="input-group mb-2">
+                                    <div class="input-group-prepend">
+                                        <div id="alsoPriceText" class="input-group-text">Shares</div>
+                                    </div>
+                                    <input autocomplete="off" type="text" class="form-control" name="sharesInput" id="sharesInput" required>
+                                </div>
+                            </div>
+                            <button id="buyBtn" class="btn btn-secondary" type="submit" onclick="return !isNaN(document.getElementById('sharesInput').value);" style="transform: translateY(-10px);" >Buy</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-danger" style="margin-top:10px; margin:auto; width:50%;"role="alert">Quote not found!</div>
+        {% endif %}
+    {% endif %}
+
+</div>
+
+<div id="buy" class="hubDivs" style="display:none;">Buy</div>
+<div id="sell" class="hubDivs" style="display:none;">Sell</div>
+<div id="history" class="hubDivs" style="display:none;">History</div>
+
+<script>
+
+    // NAVBAR SYSTEM
+
+    var navItems = document.getElementsByClassName("nav-item");
+    var divs = document.getElementsByClassName("hubDivs");
+
+    for(let i = 0, len = navItems.length; i < len; i++){
+        navItems.item(i).addEventListener("click", function(){
+
+            document.getElementById("portfolio").style.display = "none";
+            divs.item(i).style.display = "block";
+
+            for(let x = 0; x < len; x++)
+                if(divs.item(x) != divs.item(i))
+                    divs.item(x).style.display = "none";
+
+        });
+    }
+
+
+    // SERVER-SIDE
+
+    {% if redirectDiv is defined %}
+        document.getElementById("portfolio").style.display = "none";
+        divs.item({{ redirectDiv }}).style.display = "block";
+    {% endif %}
+
+    // HUB DIV
+    document.getElementById("sharesInput").addEventListener("keyup", function(){
+        let whereToDisplayPrice = document.getElementById("alsoPriceText");
+        if(!isNaN(this.value) && this.value != 0){
+            {% if quoteData is defined %}
+                let totalPrice = parseInt({{ quoteData.get("price")|tojson }}.substr(1)) * this.value;
+                whereToDisplayPrice.innerHTML = "$" + totalPrice.toString();
+
+                whereToDisplayPrice.style.color = "green";
+            {% endif %}
+        }
+        else
+        {
+            whereToDisplayPrice.innerHTML = "Shares";
+            whereToDisplayPrice.style.color = "";
+        }
+    });
+
+    </script>
 {% endblock %}

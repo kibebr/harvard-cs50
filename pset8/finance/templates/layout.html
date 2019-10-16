@@ -33,18 +33,20 @@
             </button>
             <div class="collapse navbar-collapse" id="navbar">
                 {% if session.user_id %}
+
                     <ul class="navbar-nav mr-auto mt-2">
-                        <li class="nav-item"><a class="nav-link" href="/quote">Quote</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/buy">Buy</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/sell">Sell</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/history">History</a></li>
+                        <li id="quoteNavItem"class="nav-item"><a class="nav-link">Quote</a></li>
+                        <li id="buyNavItem" class="nav-item"><a class="nav-link">Buy</a></li>
+                        <li id="sellNavItem" class="nav-item"><a class="nav-link">Sell</a></li>
+                        <li id="historyNavItem" class="nav-item"><a class="nav-link">History</a></li>
                     </ul>
+                    <p class="navbar-nav ml-auto mt-2">Cash: ${{currentUserCash}}</p>
                     <ul class="navbar-nav ml-auto mt-2">
                         <li class="nav-item"><a class="nav-link" href="/logout">Log Out</a></li>
                     </ul>
                 {% else %}
                     <ul class="navbar-nav ml-auto mt-2">
-                        <li class="nav-item"><a class="nav-link" id="registerNavItem" href="#">Register</a></li>
+                        <li class="nav-item"><a class="nav-link" id="registerNavItem">Register</a></li>
                         <li class="nav-item"><a class="nav-link" href="/login">Log In</a></li>
                     </ul>
                 {% endif %}
@@ -53,7 +55,7 @@
 
         {% if get_flashed_messages() %}
             <header>
-                <div class="alert alert-primary border text-center" role="alert">
+                <div class="alert alert-danger border text-center" role="alert">
                     {{ get_flashed_messages() | join(" ") }}
                 </div>
             </header>
@@ -61,6 +63,7 @@
 
         <main class="container p-5">
             {% block main %}{% endblock %}
+            <div id="serverside-error" class="error_placeholders alert alert-danger" role="alert">{{ error_message }}</div>
         </main>
 
         <footer class="small text-center text-muted">
@@ -69,4 +72,44 @@
 
     </body>
 
+    <script>
+        // BOOTSTRAP'S CODE TO VALIDATE FORMS
+        (function()
+        {
+            'use strict';
+            window.addEventListener('load', function()
+            {
+                // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                var forms = document.getElementsByClassName('needs-validation');
+                // Loop over them and prevent submission
+                var validation = Array.prototype.filter.call(forms, function(form)
+                {
+                    form.addEventListener('submit', function(event)
+                    {
+                        if (form.checkValidity() === false)
+                        {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+
+                        if(passwordInput.value!=passwordCheckInput.value)
+                        {
+                            event.preventDefault();
+                            event.stopPropagation();
+
+                            // additional measures if both passwords inputs aren't the same
+                            document.getElementById("password_confirmation_error").style.display = "inline-block";
+                        }
+
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+
+        // SERVER-SIDE INSTRUCTIONS
+        {% if error_message %}
+            document.getElementById("serverside-error").style.display = "block";
+        {% endif %}
+    </script>
 </html>
