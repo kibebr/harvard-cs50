@@ -1,12 +1,14 @@
 import os
+import json
 
 from cs50 import SQL
-from flask import Flask, flash, jsonify, redirect, render_template, request, session
+from flask import Flask, flash, jsonify, redirect, render_template, request, session, Response
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
-
+from decimal import Decimal
+import datetime
 from helpers import apology, login_required, lookup, usd
 
 # Configure application
@@ -35,14 +37,15 @@ Session(app)
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///finance.db")
 
+# Last quote user looked up
+class DataStore():
+    lastQuote = None
+
+data = DataStore()
+
 # Make sure API key is set
 if not os.environ.get("API_KEY"):
     raise RuntimeError("API_KEY not set")
-
-
-# GLOBAL VARIABLES
-id_counter = 0
-
 
 @app.route("/")
 @login_required
@@ -51,10 +54,28 @@ def index():
     return render_template("hub.html")
 
 
-@app.route("/buy", methods=["GET", "POST"])
+@app.route("/buy", methods=["POST"])
 @login_required
 def buy():
-    """Buy shares of stock"""
+    requestedStocks = request.form.get("sharesInput")
+    if not requestedStocks:
+        return render_template("hub.html", redirectDiv=0, quoteData=data.lastQuote, error_message="Quantity of shares not specified.")
+
+    # standard stock price * how many stocks user requested to purchase
+    totalValue = Decimal(data.lastQuote.get("price").replace("$","")) * int(requestedStocks)
+
+    currentUserCash = Decimal(db.execute("SELECT cash FROM users WHERE id = :id", id=session["user_id"])[0].get("cash", None))
+    userFinalCash = currentUserCash - totalValue
+
+    if not userFinalCash >= 0:
+        return render_template("hub.html", redirectDiv=0, quoteData=data.lastQuote, error_message="Could not purchase stocks: not enough cash.")
+    else: # just remember that you will have to make userCurrentCash as a global variable, search the best way to do so
+        purchaseDateTime = datetime.datetime.utcnow()
+        db.execute("UPDATE users SET cash = {} WHERE id = {}".format(userFinalCash, session["user_id"]))
+        db.execute("INSERT INTO purchases ('purchaser', 'price', 'date') VALUES ('{}', '{}', '{}')".format(session["user_id"], totalValue, purchaseDateTime.strftime('%Y-%m-%d %H:%M:%S')))
+        return render_template("hub.html", redirectDiv=0, quoteData=data.lastQuote, error_message="Success! Completed.")
+
+
     return apology("TODO")
 
 
@@ -119,37 +140,41 @@ def logout():
     return redirect("/")
 
 
-@app.route("/quote", methods=["GET", "POST"])
+@app.route("/quote", methods=["POST"])
 @login_required
 def quote():
-    """Get stock quote."""
-    return "todo"
+    userInput = request.form.get("symbol")
 
+    if not userInput:
+        return render_template("hub.html", redirectDiv=0, error_message="Please insert a symbol.")
+
+    data.lastQuote = lookup(userInput)
+    return render_template("hub.html", redirectDiv=0, quoteData=data.lastQuote)
 
 @app.route("/register", methods=["POST"])
 def register():
     username = request.form.get("username")
     password = request.form.get("password")
     passwordConfirmation = request.form.get("passwordCheck")
+    canRegister = True
 
     # DOUBLE CHECKS IF USER DIDN'T LEAVE THE FORM BLANK
     if not username or not password or not passwordConfirmation:
-        return render_template("login.html", error_message="One or more fields were left blank.")
+        flash("One or more fields were left blank.")
+        canRegister = False
 
     # CHECKS IF USERNAME IS ALREADY TAKEN
     for usernames in db.execute("SELECT username FROM 'users'"):
-        if list(usernames.values())[0].lower() == username.lower(): # SQL returns a dict, so we convert it to a list first
-            return render_template("login.html", error_message="Username already taken.")
-
+        if usernames.get("username", None).lower() == username.lower():
+            canRegister = False
 
     # CREATES A HASH FOR USER'S PASSWORD AND INSERTS DATA IN THE DATABASE
-    hashed_password = generate_password_hash(password, method='pbkdf2:sha256', salt_length=2)
-    db.execute("INSERT INTO 'users' ('username', 'hash') VALUES ('{}', '{}')"
-                                                        .format(username, hashed_password))
-
-
-
-    return redirect("/")
+    if canRegister:
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256', salt_length=2)
+        db.execute("INSERT INTO 'users' ('username', 'hash') VALUES ('{}', '{}')".format(username, hashed_password))
+        return redirect("/")
+    else:
+        return render_template("login.html", error_message="Username already taken.", redirectToRegister=True);
 
 
 @app.route("/sell", methods=["GET", "POST"])
