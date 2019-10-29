@@ -49,7 +49,7 @@ class Stock:
         fetchData = lookup(symbol)
         self.name = fetchData["name"]
         self.price = fetchData["price"]
-        self.symbol = symbol;
+        self.symbol = symbol
         self.shares = shares
     def get_dict(self):
         return {"symbol": self.symbol, "name": self.name, "price": self.price, "shares": self.shares}
