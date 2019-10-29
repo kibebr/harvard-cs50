@@ -95,14 +95,16 @@ def buy():
 
         if len(db.execute("SELECT * from total_userShares WHERE userid = '{}' AND symbol = '{}'".format(session["user_id"], data.lastQuote.get("symbol")))) != 1:
             db.execute("INSERT INTO total_userShares ('userid', 'symbol', 'shares') VALUES ('{}', '{}', '{}')".format(session["user_id"], data.lastQuote.get("symbol"), int(requestedShares)))
+            cacheNewStock = {"symbol": requestedSymbol, "name": data.lastQuote.get("name"), "price": data.lastQuote.get("price"), "shares": requestedShares}
+            session["user_stocks"].append(cacheNewStock);
         else: # JUST UPDATE THE SHARES FOR THAT STOCK
             db.execute("UPDATE total_userShares SET shares = shares + '{}' WHERE userid = '{}' AND symbol = '{}'".format(int(requestedShares), session["user_id"], data.lastQuote.get("symbol")))
+            for stock in userStocks: # updates cache
+                if stock["symbol"] == requestedSymbol.upper():
+                    stock["shares"] = stock["shares"] + int(requestedShares)
 
-        for stock in userStocks: # updates cache
-            if stock["symbol"] == requestedSymbol.upper():
-                stock["shares"] = stock["shares"] + int(requestedShares)
-                flash("Success! Transaction (buying) completed.", category="success")
-                return {"id": "BOUGHT"}
+        flash("Success! Transaction (buying) completed.", category="success")
+        return {"id":"BOUGHT"}
 
     return apology("TODO")
 
