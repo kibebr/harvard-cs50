@@ -50,18 +50,19 @@
             </div>
         </nav>
 
-        {% if get_flashed_messages() %}
-            <header>
-                <div class="alert alert-danger border text-center" role="alert">
-                    {{ get_flashed_messages() | join(" ") }}
-                </div>
-            </header>
-        {% endif %}
-
-        <main class="container p-5">
+        <main id="container" class="container p-5">
             {% block main %}{% endblock %}
-            <div id="serverside-error" class="alert_placeholder alert alert-danger" role="alert">{{ error_message }}</div>
-            <div id="serverside-success" class="alert_placeholder alert alert-success" role="alert">{{ success_message }}</div>
+
+            {% with alerts = get_flashed_messages(with_categories=true) %}
+                {% if alerts %}
+                    {% for category, message in alerts %}
+                        <div id="serverside_alert" class="alert_placeholder alert alert-{{category}}"role="alert">
+                                {{ message}}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <div id="clientside_alert" class="alert_placeholder" role="alert"></div>
         </main>
 
         <footer class="small text-center text-muted">
@@ -71,6 +72,35 @@
     </body>
 
     <script>
+        // UTILITIES
+        function createAlert(message, category){
+            var newDiv = document.createElement("div");
+
+            newDiv.classList.add("alert_placeholder", "alert", "alert-"+category);
+            newDiv.setAttribute("role", "alert");
+
+            newDiv.style.textAlign = "center";
+            newDiv.innerHTML = message;
+
+            document.getElementById("container").appendChild(newDiv);
+            startFadeAlerts();
+        }
+
+        // fade alerts after 3segs
+        function startFadeAlerts(){
+            var alerts = document.getElementsByClassName("alert_placeholder");
+            setTimeout(function fadeAlerts(){
+                for(let x = 0, alertsLen = alerts.length; x < alertsLen; x++){
+                    alerts.item(x).classList.add("fade");
+                    setTimeout(function removeAlerts(){
+                        alerts.item(x).parentNode.removeChild(alerts.item(x));
+                    }, 500);
+                }
+            }, 3000);
+        }
+        startFadeAlerts();
+
+
         (function()
         {
             'use strict';
@@ -95,7 +125,7 @@
                             event.stopPropagation();
 
                             // additional measures if both passwords inputs aren't the same
-                            document.getElementById("password_confirmation_error").style.display = "inline-block";
+                            createAlert("Passwords must be the same.", "danger");
                         }
 
                         form.classList.add('was-validated');
@@ -103,12 +133,5 @@
                 });
             }, false);
         })();
-
-        // SERVER-SIDE INSTRUCTIONS
-        {% if error_message %}
-            document.getElementById("serverside-error").style.display = "block";
-        {% elif success_message %}
-            document.getElementById("serverside-success").style.display = "block";
-        {% endif %}
     </script>
 </html>

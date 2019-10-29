@@ -2,87 +2,109 @@
 
 {% block main %}
 
+
 <div id="portfolio" class="hubDivs">
-    <div class="card-columns">
-        {% set userStocks = session["user_stocks"] %}
-        {% if userStocks %}
-            {% for symbol, shares in userStocks.items() %}
-                {% set symbolLookup = symbol|lookup %}
+    {% set userStocks = session["user_stocks"] %}
+    {% if userStocks %}
+        <div class="card-columns">
+            {% for stock in userStocks %}
                 <div class="card" style="width: 18rem;">
                     <div class="card-body">
-                        <h5 class="card-title">{{ (symbolLookup).get("name") }}</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">{{ symbol }}</h6>
-                        <p class="card-text">Shares owned: {{ shares }}<br>
-                                             Current price: {{ (symbolLookup).get("price") }}
+                        <h5 class="card-title">{{ stock["name"] }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ stock["symbol"] }}</h6>
+                        <p class="card-text">Shares owned: {{ stock["shares"] }}<br>
+                                             Current price: {{ stock["price"] }}
                         </p>
 
-                        <form action="/sell?sym={{symbol}}" method="post">
+                        <form action="/sell?sym={{stock['symbol']}}" method="post">
                             <div class="form-row">
                                 <div id="sharesDiv" class="col">
                                     <div class="input-group mb-2">
                                         <div class="input-group-prepend">
                                             <div id="alsoPriceText" class="input-group-text">Shares</div>
                                         </div>
-                                        <input name="shares" autocomplete="off" type="text" class="form-control" name="sharesInput" id="sharesInput" required>
+                                        <input name="shares" autocomplete="off" type="text" class="form-control" name="sharesInput" required>
                                     </div>
                                 </div>
-                                <button id="buyBtn" class="btn btn-dark font-weight-bold" type="submit" style="transform: translateY(-10px);" >Sell</button>
+                                <button class="btn btn-dark font-weight-bold sell" type="submit" style="transform: translateY(-10px);" >Sell</button>
                             </div>
                         </form>
                     </div>
                 </div>
             {% endfor %}
-        {% else %}
-            <p>stock is not defined</p>
-        {% endif %}
-    </div>
-
-</div>
-
-<div id="quote" class="hubDivs" style="display:none;">
-    <form class="form-group" action="/quote" method="post">
-        <input autocomplete="off" autofocus class="form-control" name="symbol" placeholder="Symbol" type="text">
-        <button class="btn btn-primary" type="submit">Quote</button>
-    </form>
-
-    {% if quoteData is defined and quoteData is not none %}
-        {% if quoteData is not none %}
-            <div class="card bg-white mb-3" style="max-width: 18rem;">
-                <div class="card-2header badge badge-success" style="background-color:#24763c;">Quote found!</div>
-                <div class="card-body">
-                    <h5 class="card-title" style="display:inline-block;">{{ quoteData.get("name") }} </h5>
-                    <span class="badge badge-dark" style="vertical-align:sub;">{{ quoteData.get("symbol") }}</span>
-                    <p class="card-text">Price: {{ quoteData.get("price") }}</p>
-                    <form class="needs-validation" action="/buy" method="post" novalidate>
-                        <div class="form-row">
-                            <div id="sharesDiv" class="col">
-                                <label class="sr-only" for="sharesInput"></label>
-                                <div class="input-group mb-2">
-                                    <div class="input-group-prepend">
-                                        <div id="alsoPriceText" class="input-group-text font-weight-bold">Shares</div>
-                                    </div>
-                                    <input autocomplete="off" type="text" class="form-control" name="sharesInput" id="sharesInput" required>
-                                </div>
-                            </div>
-                            <button id="buyBtn" class="btn btn-dark" type="submit" onclick="return !isNaN(document.getElementById('sharesInput').value);" style="transform: translateY(-10px);" >Buy</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        {% else %}
-            <div class="alert_placeholder alert alert-danger" role="alert">Quote not found!</div>
-        {% endif %}
+        </div>
+    {% else %}
+        <div class="alert alert-secondary" role="alert">
+            <h4 class="alert-heading">Too empty...</h4>
+            <p>Seems like you haven't bought any stocks yet; once you do, your stocks will be shown here.</p>
+            <hr>
+            <p class="mb-0">Do you wish to search for stocks now?</p>
+        </div>
     {% endif %}
 
 </div>
 
-<div id="history" class="hubDivs" style="display:none;">History</div>
+<div id="quote" class="hubDivs" style="display:none;">
+    <form onsubmit="return false;">
+        <input autocomplete="off" autofocus class="form-control" id="requestedSymbol" name="sym" placeholder="Symbol" type="text">
+        <button type="submit" class="btn btn-primary" onclick="return false;" id="requestQuoteBtn">Quote</button>
+    </form>
+
+
+    <div id="quotedata_placeholder" style="padding-top:20px; display:none;">
+                <div class="card bg-white mb-3" style="max-width: 18rem;">
+                    <div class="card-2header badge badge-success" style="background-color:#24763c;">Quote found!</div>
+                        <div class="card-body">
+                            <h5 id="title_placeholder" class="card-title" style="display:inline-block;"></h5>
+                            <span id="symbol_placeholder" class="badge badge-dark" style="vertical-align:sub;"> </span>
+                            <p id="price_placeholder" class="card-text"></p>
+                            <form class="needs-validation" onsubmit="return false;" novalidate>
+                                <div class="form-row">
+                                    <div id="sharesDiv" class="col">
+                                        <label class="sr-only" for="sharesToBuy"></label>
+                                        <div class="input-group mb-2">
+                                            <div class="input-group-prepend">
+                                                <div id="alsoPriceText" class="input-group-text font-weight-bold">Shares</div>
+                                            </div>
+                                        <input autocomplete="off" type="text" class="form-control" name="sharesToBuy" id="sharesToBuy" required>
+                                        </div>
+                                    </div>
+                                    <button id="buyButton" class="btn btn-dark" style="transform: translateY(-10px);" >Buy</button>
+                                </div>
+                            </form>
+                        </div>
+                </div>
+    </div>
+
+    <div id="quotedataError_placeholder" class="alert alert-danger" role="alert" style="max-width:18rem; margin-top:20px; display:none;">
+        <h4 class="alert-heading font=weight-bold">Uh-oh!</h4>
+        <hr>
+        <p>No company was found with that symbol.</p>
+    </div>
+
+    {% if quoteData is defined %}
+        <p>{{ quoteData.get("name") }}</p>
+    {% endif %}
+</div>
+
+<div id="history" class="hubDivs" style="display:none;">
+</div>
 
 <script>
+    // for all the stocks the user has, create a event listener (sell)
+    function createAJAX(){
+        try{
+            return new XMLHttpRequest();
+        }catch(e){
+            try{
+                return new ActiveXObject("Microsoft.XMLHTTP");
+            }catch(e){
+                return new ActiveXObject("Msxml2.XMLHTTP");
+            }
+        }
 
+    }
     // OTHER VARIABLES
-    var errorMessageDiv = document.getElementById("serverside-error");
-    var successMessageDiv = document.getElementById("serverside-success");
     var portfolioDiv = document.getElementById("portfolio");
 
     // NAVBAR SYSTEM
@@ -90,28 +112,16 @@
     var divs = document.getElementsByClassName("hubDivs");
 
     for(let i = 0, len = navItems.length; i < len; i++){
-        console.log(navItems.item(i));
         navItems.item(i).addEventListener("click", function(){
-
             divs.item(i).style.display = "block";
-
             for(let x = 0; x < len; x++)
                 if(divs.item(x) != divs.item(i))
                     divs.item(x).style.display = "none";
-
         });
     }
 
-
-    // SERVER-SIDE
-
-    {% if redirectDiv is defined %}
-        portfolioDiv.style.display = "none";
-        divs.item({{ redirectDiv }}).style.display = "block";
-    {% endif %}
-
     // HUB DIV
-    document.getElementById("sharesInput").addEventListener("keyup", function(){
+    document.getElementById("sharesToBuy").addEventListener("keyup", function(){
         let whereToDisplayPrice = document.getElementById("alsoPriceText");
 
         if(!isNaN(this.value))
@@ -132,5 +142,72 @@
         }
     });
 
+    // QUOTE DIV
+
+    document.getElementById("requestQuoteBtn").addEventListener("click", function createQuoteRequest(){
+        var quoteSymbol = document.getElementById("requestedSymbol").value;
+        var quoteRequest = createAJAX();
+
+        history.pushState({}, null, "/quote?sym="+quoteSymbol);
+
+        quoteRequest.open('GET', '/quote?sym='+quoteSymbol+"&fromAJAX=1");
+        quoteRequest.send();
+
+        quoteRequest.onload = function getQuoteRequest(){
+            if(quoteRequest.status == 200){ // SUCCESSFUL
+                displayQuoteData(false, JSON.parse(quoteRequest.response));
+
+                document.getElementById("buyButton").addEventListener("click", function createBuyRequest(){
+                    var buyRequest = createAJAX();
+                    let howManyShares = document.getElementById("sharesToBuy").value;
+
+                    buyRequest.open('GET', '/buy?sym='+quoteSymbol+"&shares="+howManyShares);
+                    buyRequest.send();
+
+                    buyRequest.onload = function getBuyRequest(){
+                        var responseID = JSON.parse(buyRequest.response)["id"];
+
+                        if(buyRequest.status == 200){
+                            if(responseID == "NOT_ENOUGH_CASH")
+                                createAlert("Not enough cash.", "danger");
+                            else // responseID = "BOUGHT"
+                                document.location.href = "/";
+                        }
+                        else
+                            alert("buy not successful!");
+                    }
+                });
+
+            }
+            else // NO COMPANY W/ THIS SYMBOL FOUND
+                displayQuoteData(true, null);
+        };
+    });
+
+
+    function displayQuoteData(isError, quoteData){
+        let whereToShowData = document.getElementById("quotedata_placeholder");
+        let whereToShowError = document.getElementById("quotedataError_placeholder");
+
+        if(!isError){
+            document.getElementById("title_placeholder").innerHTML = quoteData["name"];
+            document.getElementById("symbol_placeholder").innerHTML = quoteData["symbol"];
+            document.getElementById("price_placeholder").innerHTML = quoteData["price"];
+            whereToShowData.style.display = "inline-block";
+            whereToShowError.style.display = "none";
+        }
+        else{
+            whereToShowData.style.display = "none";
+            whereToShowError.style.display = "inline-block";
+        }
+    }
+
+    // SERVER-SIDE
+    // SELLING SYSTEM (PORTFOLIO DIV)
+
+    {% if redirectDiv is defined %}
+        portfolioDiv.style.display = "none";
+        divs.item({{ redirectDiv }}).style.display = "block";
+    {% endif %}
     </script>
 {% endblock %}
