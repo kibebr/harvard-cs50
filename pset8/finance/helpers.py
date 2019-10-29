@@ -51,7 +51,7 @@ def lookup(symbol):
         quote = response.json()
         return {
             "name": quote["companyName"],
-            "price": float(quote["latestPrice"]),
+            "price": usd(float(quote["latestPrice"])),
             "symbol": quote["symbol"]
         }
     except (KeyError, TypeError, ValueError):
@@ -61,3 +61,6 @@ def lookup(symbol):
 def usd(value):
     """Format value as USD."""
     return f"${value:,.2f}"
+
+def usdFloat(value):
+    return float(f"{value:,.2f}")
