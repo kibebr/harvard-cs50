@@ -1,0 +1,100 @@
+{% extends "layout.html" %}
+
+{% block main %}
+
+    <!-- http://getbootstrap.com/docs/4.1/content/typography/ -->
+    <h1 class="mb-3">Form</h1>
+
+<div id="error_placeholder"></div>
+
+</div>
+    <!-- http://getbootstrap.com/docs/4.1/components/forms/ -->
+    <form action="/form" method="post" id="mainForm">
+        <div class="form-group"> <!-- first name --->
+            <label for="inputFName">First name:</label>
+            <input type="text" class="form-control" name="fname" aria-describedby="fnameHelp" placeholder="Enter your first name">
+        </div>
+
+        <div class="form-group"> <!-- last name --->
+            <label for="inputLName">Last name:</label>
+            <input type="text" class="form-control" name="lname" aria-describedby="lnameHelp" placeholder="Enter your last name">
+        </div>
+
+        <div class="form-group"> <!-- country --->
+            <label for="country">Country: </label>
+            <select class="form-control" name="country">
+                <option value="US">United States of America</option>
+                <option value="CA">Canada</option>
+                <option value="BR">Brazil</option>
+            </select>
+        </div>
+
+
+        <div class="form-group">
+            <input class="form-check-input" type="radio" name="agecheck" value="18over">
+            <label class="form-check-label">18 or over</label>
+        </div>
+
+        <div class="form-group">
+            <input class="form-check-input" type="radio" name="agecheck" value="under18">
+            <label class="form-check-label">Under 18</label>
+        </div>
+
+
+        <!-- http://getbootstrap.com/docs/4.1/components/buttons/ -->
+        <button class="btn btn-primary" type="submit" onclick="return validateForm()">Submit</button>
+
+    </form>
+
+    <script>
+
+        function validateForm(){
+            var Form = document.getElementById('mainForm');
+
+            var errorMessage = "";
+            var errorExist = false;
+
+            var firstName = Form.elements['fname'];
+            var lastName = Form.elements['lname'];
+
+            var ageValue; // user's age
+            var ageOptions = Form.elements['agecheck']; // all the options possible (UNDER 18, OVER 18)
+
+            // loops through all the options and assigns ageValue to the checked option
+            for(var i=0, len=ageOptions.length; i<len; i++){
+                if(ageOptions[i].checked){
+                    ageValue = ageOptions[i].value;
+                    break;
+                }
+            }
+
+            // if a name has not been typed, cancel submission
+            if(firstName.value=="" || lastName.value==""){
+                errorMessage += "Please provide your name.\n";
+                errorExist = true;
+            }
+
+            // if an age has not been selected, cancel submission
+            if(ageValue == undefined){
+                errorMessage += "Please provide your age.";
+                errorExist = true;
+            }
+
+            if(errorExist)
+            {
+                $("#error_placeholder").html(
+                '<div class="alert alert-danger fade show" role="alert" id="alert">'+errorMessage+'</div>');
+
+                setTimeout(function(){
+                    $('.alert').alert('close'); // bootstrap function to close
+                }, 3000);
+
+                return false;
+            }
+            else
+                return true;
+        }
+
+    </script>
+
+{% endblock %}

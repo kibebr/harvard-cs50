@@ -1,0 +1,101 @@
+{% extends "layout.html" %}
+
+{% block main %}
+
+    <h1 class="mb-3"> Sheet </h1>
+
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Search for</button>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" onclick="setSearchMode('fname')">First name</a>
+                <a class="dropdown-item" onclick="setSearchMode('lname')">Last name</a>
+            </div>
+        </div>
+        <input type="text" id="search" class="form-control" aria-label="Text input with dropdown button">
+    </div>
+
+    <div id="thetable">
+        <table class="table" style="width: 75%">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">First name</th>
+                    <th scope="col">Last name</th>
+                    <th scope="col">Age</th>
+                    <th scope="col">Country</th>
+                </tr>
+            </thead>
+
+            <tbody id="table">
+                {% for person in persons %}
+                    <tr id="yep">
+                        <td>{{person.place}}</td>
+                        <td>{{person.fname}}</td>
+                        <td>{{person.lname}}</td>
+                        <td>{{person.age}}</td>
+                        <td>{{person.country}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    <script>
+    var searchBox = document.getElementById("search");
+    var SEARCH_MODE = "";
+    var searchReturned = false;
+
+    searchBox.onkeyup = function search(){
+
+        if(searchBox.value == "")
+            for(let thisRow = 0, persons_length = {{ persons|length }}; thisRow < persons_length; thisRow++)
+                document.getElementById("table").rows[thisRow].style.display = "";
+        else
+        {
+            if(SEARCH_MODE)
+            {
+                {% for names in range(persons|length) %}
+                    switch(SEARCH_MODE)
+                    {
+                        case "fname":
+                            if(searchBox.value.toLowerCase().includes({{ persons[names].fname|tojson }}.toLowerCase()))
+                            {
+                                searchReturned=true;
+                                break;
+                            }
+                            searchReturned = false;
+                        case "lname":
+                            if(searchBox.value.toLowerCase().includes({{ persons[names].lname|tojson }}.toLowerCase()))
+                            {
+                                searchReturned = true;
+                                break;
+                            }
+                            searchReturned = false;
+                    }
+                if(searchReturned)
+                    document.getElementById("table").rows[{{ names }}].style.display = "";
+                else
+                    document.getElementById("table").rows[{{ names }}].style.display = "none";
+
+                {% endfor %}
+            }
+        }
+    };
+
+    function setSearchMode(mode)
+    {
+        switch(mode)
+        {
+            case "fname":
+                searchBox.placeholder = "First name";
+                SEARCH_MODE = "fname";
+                break;
+            case "lname":
+                searchBox.placeholder = "Last name";
+                SEARCH_MODE = "lname";
+                break;
+        }
+    }
+    </script>
+
+{% endblock %}
