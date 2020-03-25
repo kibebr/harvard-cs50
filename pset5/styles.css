@@ -1,0 +1,48 @@
+#TITLE{
+    letter-spacing: 0.5px;
+    color: saddlebrown;
+    background-color:#E0E0E0;
+}
+.container{
+    border-radius:20px;
+}
+
+.breadcrumb {
+    padding: 8px 15px;
+    margin-bottom: 5px;
+    list-style: none;
+    background-color: #E0E0E0;
+    border-radius: 4px;
+    text-align: center;
+    display: block !important;
+    display: inline-block;
+}
+
+.breadcrumb>li {
+    display: inline-block;
+}
+
+.breadcrumb>.active{
+    letter-spacing: 2px;
+}
+
+.breadcrumb li a {
+    letter-spacing: 2px;
+    color: saddlebrown;
+}
+
+.card-img-top{
+    border-radius: 20px;
+    margin-bottom: 10px;
+}
+.card{
+    margin: auto;
+    background-color: #E0E0E0;
+    border-radius:20px;
+    box-shadow:0px 0px 10px saddlebrown;
+    margin-bottom:25px;
+}
+
+.texts{
+    color:black;
+}
